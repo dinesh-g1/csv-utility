@@ -4,7 +4,7 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
-	"github.com/dinesh-g1/csvutility/consts"
+	"github.com/dinesh-g1/csv-utility/consts"
 	"net/http"
 	"strconv"
 )

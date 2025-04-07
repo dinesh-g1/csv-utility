@@ -2,7 +2,7 @@ package api
 
 import (
 	"fmt"
-	"github.com/dinesh-g1/csvutility/util"
+	"github.com/dinesh-g1/csv-utility/util"
 	"net/http"
 	"strconv"
 	"strings"
