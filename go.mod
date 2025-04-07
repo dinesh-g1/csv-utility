@@ -1,4 +1,4 @@
-module github.com/dinesh-g1/csvutility
+module github.com/dinesh-g1/csv-utility
 
 go 1.23.5
 
