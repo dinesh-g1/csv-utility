@@ -5,11 +5,6 @@ import (
 	"fmt"
 )
 
-type SuccessResponse struct {
-	Value      string `json:"value"`
-	StatusCode int    `json:"status_code"`
-}
-
 type Error interface {
 	Error() string
 	ErrorMessage() ([]byte, error)

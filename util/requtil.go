@@ -65,7 +65,7 @@ func ValidateCSV(records [][]string) error {
 
 func ValidateCSVOnRowColSize(records [][]string) error {
 	if len(records) < 1 {
-		log.Printf("empty CSV records")
+		log.Printf("empty CSV file")
 		return errors.New("given file has no content")
 	}
 	if len(records) != len(records[0]) {
@@ -82,7 +82,7 @@ func ValidateCSVCellValue(records [][]string) error {
 		for cIdx, val := range record {
 			_, err := strconv.Atoi(val)
 			if err != nil {
-				log.Printf("csv cell (%d:%d) value is invalid", rIdx, cIdx)
+				log.Printf("csv cell (%d:%d) value is is not an integer", rIdx, cIdx)
 				cellValueNotIntErrMsg := fmt.Sprintf("cell(%d, %d) value is not an integer", rIdx, cIdx)
 				return errors.New(cellValueNotIntErrMsg)
 			}
