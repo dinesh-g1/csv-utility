@@ -53,6 +53,7 @@ func (fn RootHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Echo takes csv file records as input and simply returns the echo of input
 func Echo(w http.ResponseWriter, r *http.Request) error {
 	records, err := util.GetCSVContent(r)
 	if err != nil {
@@ -71,6 +72,9 @@ func Echo(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+// Sum receives the records from csv and returns the total sum of all values present in the file
+// Since file can have many values, and sum result can be huge, the result is
+// upper bounded at 10^99
 func Sum(w http.ResponseWriter, r *http.Request) error {
 	records, err := util.GetCSVContent(r)
 	if err != nil {
@@ -113,6 +117,9 @@ func Sum(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+// Multiply receives the records of csv and returns the multiplication of all values present in the file
+// Since file can have many values, and multiplication result can be huge, the result is
+// upper bounded at 10^99
 func Multiply(w http.ResponseWriter, r *http.Request) error {
 	records, err := util.GetCSVContent(r)
 	if err != nil {
@@ -127,6 +134,7 @@ func Multiply(w http.ResponseWriter, r *http.Request) error {
 		for _, num := range record {
 			intNum, err := strconv.Atoi(num)
 			if err != nil {
+				log.Printf("error occured while str to int conv %v", err)
 				return &types.ApiError{
 					Cause:      err,
 					Message:    err.Error(),
@@ -154,6 +162,7 @@ func Multiply(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+// Invert inverts the received csv matrix
 func Invert(w http.ResponseWriter, r *http.Request) error {
 	records, err := util.GetCSVContent(r)
 	if err != nil {
@@ -182,6 +191,7 @@ func Invert(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+// Flatten takes the multiple rows of csv file and flattens (appends each row after another) the file.
 func Flatten(w http.ResponseWriter, r *http.Request) error {
 	records, err := util.GetCSVContent(r)
 	if err != nil {

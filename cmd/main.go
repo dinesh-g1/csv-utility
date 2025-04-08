@@ -26,6 +26,8 @@ func main() {
 	v1Api.Handle(consts.EndpointSum, api.RootHandler(api.Sum)).Methods(http.MethodPost)
 	v1Api.Handle(consts.EndpointMultiply, api.RootHandler(api.Multiply)).Methods(http.MethodPost)
 
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+
 	log.Printf("Server started on port %s\n", *port)
 
 	addr := *host + consts.Colon + *port

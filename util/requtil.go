@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"github.com/dinesh-g1/csv-utility/consts"
 	"github.com/dinesh-g1/csv-utility/types"
+	"log"
 	"net/http"
 	"strconv"
 )
 
 func GetCSVContent(r *http.Request) ([][]string, error) {
 	if r.Method != http.MethodPost {
+		log.Printf("%s method not allowed in place of %s", r.Method, http.MethodPost)
 		return nil, &types.ApiError{
 			Cause:      nil,
 			Message:    "Method not allowed",
@@ -35,11 +37,13 @@ func ParseCSV(r *http.Request) ([][]string, error) {
 
 func getCSVContent(r *http.Request) ([][]string, error) {
 	file, _, err := r.FormFile(consts.CsvFileKey)
+	log.Printf("error while getting csv file from request: %v", err)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
 	records, err := csv.NewReader(file).ReadAll()
+	log.Printf("error while reading csv file from request: %v", err)
 	if err != nil {
 		return nil, err
 	}
@@ -61,10 +65,11 @@ func ValidateCSV(records [][]string) error {
 
 func ValidateCSVOnRowColSize(records [][]string) error {
 	if len(records) < 1 {
-		emptyCSVFile := fmt.Sprintf("given file has no content")
-		return errors.New(emptyCSVFile)
+		log.Printf("empty CSV records")
+		return errors.New("given file has no content")
 	}
 	if len(records) != len(records[0]) {
+		log.Printf("given csv file is not square matrix")
 		sizeNotEqual := fmt.Sprintf("no of rows %d is not equal to no of columns %d", len(records), len(records[0]))
 		return errors.New(sizeNotEqual)
 	}
@@ -77,6 +82,7 @@ func ValidateCSVCellValue(records [][]string) error {
 		for cIdx, val := range record {
 			_, err := strconv.Atoi(val)
 			if err != nil {
+				log.Printf("csv cell (%d:%d) value is invalid", rIdx, cIdx)
 				cellValueNotIntErrMsg := fmt.Sprintf("cell(%d, %d) value is not an integer", rIdx, cIdx)
 				return errors.New(cellValueNotIntErrMsg)
 			}
