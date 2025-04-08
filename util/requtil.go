@@ -37,14 +37,14 @@ func ParseCSV(r *http.Request) ([][]string, error) {
 
 func getCSVContent(r *http.Request) ([][]string, error) {
 	file, _, err := r.FormFile(consts.CsvFileKey)
-	log.Printf("error while getting csv file from request: %v", err)
 	if err != nil {
+		log.Printf("error while getting csv file from request: %v", err)
 		return nil, err
 	}
 	defer file.Close()
 	records, err := csv.NewReader(file).ReadAll()
-	log.Printf("error while reading csv file from request: %v", err)
 	if err != nil {
+		log.Printf("error while reading csv file from request: %v", err)
 		return nil, err
 	}
 	if err = ValidateCSV(records); err != nil {

@@ -8,8 +8,10 @@ import (
 	"log"
 	"math/big"
 	"net/http"
+	"runtime"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // RootHandler wraps all the other handlers to provide centralized error handling capabilities
@@ -73,41 +75,16 @@ func Echo(w http.ResponseWriter, r *http.Request) error {
 }
 
 // Sum receives the records from csv and returns the total sum of all values present in the file
-// Since file can have many values, and sum result can be huge, the result is
-// upper bounded at 10^99
 func Sum(w http.ResponseWriter, r *http.Request) error {
 	records, err := util.GetCSVContent(r)
 	if err != nil {
 		return err
 	}
 
-	var limit big.Int
-	limit.Exp(big.NewInt(10), big.NewInt(99), nil)
-
-	sum := big.NewInt(0)
-	for _, record := range records {
-		for _, num := range record {
-			intNum, err := strconv.Atoi(num)
-			if err != nil {
-				return &types.ApiError{
-					Cause:      err,
-					Message:    err.Error(),
-					StatusCode: http.StatusInternalServerError,
-				}
-			}
-
-			if sum.Cmp(&limit) < 0 {
-				sum.Add(sum, big.NewInt(int64(intNum)))
-			} else {
-				return &types.ApiError{
-					Cause:      nil,
-					Message:    fmt.Sprintf("sum is larger than %s", limit.String()),
-					StatusCode: http.StatusInternalServerError,
-				}
-			}
-		}
+	sum, err := csvSum(records)
+	if err != nil {
+		return err
 	}
-
 	sumStr := sum.String()
 
 	err = util.SendResponse(w, &sumStr)
@@ -117,17 +94,77 @@ func Sum(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+func csvSum(records [][]string) (*big.Int, error) {
+	if len(records) < 100 {
+		return sequentialSum(records)
+	} else {
+		return parallelSum(records)
+	}
+}
+
+func parallelSum(records [][]string) (*big.Int, error) {
+	start := time.Now()
+	cpuCores := runtime.NumCPU()
+	recordsLen := len(records)
+	sumChunks := make(chan *big.Int)
+
+	for i := 0; i < cpuCores; i++ {
+		from := (i * recordsLen) / cpuCores
+		to := (i + 1) * recordsLen / cpuCores
+		go func(records [][]string) {
+			sum := big.NewInt(0)
+			for _, record := range records {
+				for _, num := range record {
+					intNum, _ := strconv.Atoi(num)
+					sum.Add(sum, big.NewInt(int64(intNum)))
+				}
+			}
+			sumChunks <- sum
+		}(records[from:to])
+	}
+
+	totalSum := big.NewInt(0)
+	for i := 0; i < cpuCores; i++ {
+		totalSum.Add(totalSum, <-sumChunks)
+	}
+	end := time.Now()
+	log.Printf("time elapsed: %v", end.Sub(start))
+	return totalSum, nil
+}
+
+func sequentialSum(records [][]string) (*big.Int, error) {
+	start := time.Now()
+
+	sum := big.NewInt(0)
+	for _, record := range records {
+		for _, num := range record {
+			intNum, err := strconv.Atoi(num)
+			if err != nil {
+				return nil, &types.ApiError{
+					Cause:      err,
+					Message:    err.Error(),
+					StatusCode: http.StatusInternalServerError,
+				}
+			}
+
+			sum.Add(sum, big.NewInt(int64(intNum)))
+		}
+	}
+	end := time.Now()
+	log.Printf("time elapsed: %v", end.Sub(start))
+	return sum, nil
+}
+
 // Multiply receives the records of csv and returns the multiplication of all values present in the file
-// Since file can have many values, and multiplication result can be huge, the result is
-// upper bounded at 10^99
+// Since file can have many values, and multiplication result can be huge, the result can be upper bounded using limit
 func Multiply(w http.ResponseWriter, r *http.Request) error {
 	records, err := util.GetCSVContent(r)
 	if err != nil {
 		return err
 	}
 
-	var limit big.Int
-	limit.Exp(big.NewInt(10), big.NewInt(99), nil)
+	//var limit big.Int
+	//limit.Exp(big.NewInt(10), big.NewInt(99), nil)
 
 	multiply := big.NewInt(1)
 	for _, record := range records {
@@ -141,15 +178,8 @@ func Multiply(w http.ResponseWriter, r *http.Request) error {
 					StatusCode: http.StatusInternalServerError,
 				}
 			}
-			if multiply.Cmp(&limit) < 0 {
-				multiply.Mul(multiply, big.NewInt(int64(intNum)))
-			} else {
-				return &types.ApiError{
-					Cause:      nil,
-					Message:    fmt.Sprintf("multiplicated value is larger than %s", limit.String()),
-					StatusCode: http.StatusInternalServerError,
-				}
-			}
+
+			multiply.Mul(multiply, big.NewInt(int64(intNum)))
 
 		}
 	}
