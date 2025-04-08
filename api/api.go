@@ -67,10 +67,7 @@ func Echo(w http.ResponseWriter, r *http.Request) error {
 		response = fmt.Sprintf("%s%s\n", response, strings.Join(row, ","))
 	}
 
-	err = util.SendResponse(w, &response)
-	if err != nil {
-		return err
-	}
+	util.SendResponse(w, &response)
 	return nil
 }
 
@@ -87,10 +84,7 @@ func Sum(w http.ResponseWriter, r *http.Request) error {
 	}
 	sumStr := sum.String()
 
-	err = util.SendResponse(w, &sumStr)
-	if err != nil {
-		return err
-	}
+	util.SendResponse(w, &sumStr)
 	return nil
 }
 
@@ -167,10 +161,7 @@ func Multiply(w http.ResponseWriter, r *http.Request) error {
 	}
 	totalMulStr := multiply.String()
 
-	err = util.SendResponse(w, &totalMulStr)
-	if err != nil {
-		return err
-	}
+	util.SendResponse(w, &totalMulStr)
 	return nil
 }
 
@@ -196,10 +187,7 @@ func Invert(w http.ResponseWriter, r *http.Request) error {
 		inverted = fmt.Sprintf("%s%s\n", inverted, strings.Join(row, ","))
 	}
 
-	err = util.SendResponse(w, &inverted)
-	if err != nil {
-		return err
-	}
+	util.SendResponse(w, &inverted)
 	return nil
 }
 
@@ -218,9 +206,6 @@ func Flatten(w http.ResponseWriter, r *http.Request) error {
 	}
 	flattened := strings.TrimSuffix(responseBuilder.String(), ",")
 
-	err = util.SendResponse(w, &flattened)
-	if err != nil {
-		return err
-	}
+	util.SendResponse(w, &flattened)
 	return nil
 }

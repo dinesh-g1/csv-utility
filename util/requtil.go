@@ -7,6 +7,7 @@ import (
 	"github.com/dinesh-g1/csv-utility/consts"
 	"github.com/dinesh-g1/csv-utility/types"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 )
@@ -41,7 +42,12 @@ func getCSVContent(r *http.Request) ([][]string, error) {
 		log.Printf("error while getting csv file from request: %v", err)
 		return nil, err
 	}
-	defer file.Close()
+	defer func(file multipart.File) {
+		err := file.Close()
+		if err != nil {
+			log.Printf("error while closing csv file: %v", err)
+		}
+	}(file)
 	records, err := csv.NewReader(file).ReadAll()
 	if err != nil {
 		log.Printf("error while reading csv file from request: %v", err)

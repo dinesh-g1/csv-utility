@@ -17,7 +17,7 @@ const (
 
 // Test case related constants
 const (
-	CsvFileBasePath   = "/Users/pavankaareddy/dinesh/league-backend-challenge/api/"
+	CsvFileBasePath   = "/Users/pavankaareddy/dinesh/league-backend-challenge/api/testresources/"
 	SampleCsvFileName = "matrix.csv"
 	EmptyCsvFileName  = "empty.csv"
 	BigCsvFileName    = "bigmatrix.csv"

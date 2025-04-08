@@ -5,11 +5,7 @@ import (
 	"net/http"
 )
 
-func SendResponse(w http.ResponseWriter, response *string) error {
+func SendResponse(w http.ResponseWriter, response *string) {
 	w.WriteHeader(http.StatusOK)
-	_, err := fmt.Fprintf(w, *response)
-	if err != nil {
-		return err
-	}
-	return nil
+	_, _ = fmt.Fprintf(w, *response)
 }

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/dinesh-g1/csv-utility/consts"
 	"github.com/dinesh-g1/csv-utility/types"
-	mux "github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 	"io"
 	"log"
 	"mime/multipart"
