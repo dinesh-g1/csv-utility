@@ -14,10 +14,10 @@ import (
 	"time"
 )
 
-// RootHandler wraps all the other handlers to provide centralized error handling capabilities
-type RootHandler func(http.ResponseWriter, *http.Request) error
+// CSVOperationsHandler wraps all the other handlers to provide centralized error handling capabilities
+type CSVOperationsHandler func(http.ResponseWriter, *http.Request) error
 
-func (fn RootHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (fn CSVOperationsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err := fn(w, r)
 	if err == nil {
 		return
@@ -95,7 +95,7 @@ func Sum(w http.ResponseWriter, r *http.Request) error {
 }
 
 func csvSum(records [][]string) (*big.Int, error) {
-	if len(records) < 100 {
+	if len(records) < 50 {
 		return sequentialSum(records)
 	} else {
 		return parallelSum(records)
@@ -138,15 +138,7 @@ func sequentialSum(records [][]string) (*big.Int, error) {
 	sum := big.NewInt(0)
 	for _, record := range records {
 		for _, num := range record {
-			intNum, err := strconv.Atoi(num)
-			if err != nil {
-				return nil, &types.ApiError{
-					Cause:      err,
-					Message:    err.Error(),
-					StatusCode: http.StatusInternalServerError,
-				}
-			}
-
+			intNum, _ := strconv.Atoi(num)
 			sum.Add(sum, big.NewInt(int64(intNum)))
 		}
 	}
@@ -169,18 +161,8 @@ func Multiply(w http.ResponseWriter, r *http.Request) error {
 	multiply := big.NewInt(1)
 	for _, record := range records {
 		for _, num := range record {
-			intNum, err := strconv.Atoi(num)
-			if err != nil {
-				log.Printf("error occured while str to int conv %v", err)
-				return &types.ApiError{
-					Cause:      err,
-					Message:    err.Error(),
-					StatusCode: http.StatusInternalServerError,
-				}
-			}
-
+			intNum, _ := strconv.Atoi(num)
 			multiply.Mul(multiply, big.NewInt(int64(intNum)))
-
 		}
 	}
 	totalMulStr := multiply.String()

@@ -20,11 +20,11 @@ func main() {
 	v1Api := r.PathPrefix(consts.ApiV1).Subrouter()
 
 	//Registering all the api endpoints
-	v1Api.Handle(consts.EndpointEcho, api.RootHandler(api.Echo)).Methods(http.MethodPost)
-	v1Api.Handle(consts.EndpointInvert, api.RootHandler(api.Invert)).Methods(http.MethodPost)
-	v1Api.Handle(consts.EndpointFlatten, api.RootHandler(api.Flatten)).Methods(http.MethodPost)
-	v1Api.Handle(consts.EndpointSum, api.RootHandler(api.Sum)).Methods(http.MethodPost)
-	v1Api.Handle(consts.EndpointMultiply, api.RootHandler(api.Multiply)).Methods(http.MethodPost)
+	v1Api.Handle(consts.EndpointEcho, api.CSVOperationsHandler(api.Echo)).Methods(http.MethodPost)
+	v1Api.Handle(consts.EndpointInvert, api.CSVOperationsHandler(api.Invert)).Methods(http.MethodPost)
+	v1Api.Handle(consts.EndpointFlatten, api.CSVOperationsHandler(api.Flatten)).Methods(http.MethodPost)
+	v1Api.Handle(consts.EndpointSum, api.CSVOperationsHandler(api.Sum)).Methods(http.MethodPost)
+	v1Api.Handle(consts.EndpointMultiply, api.CSVOperationsHandler(api.Multiply)).Methods(http.MethodPost)
 
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 

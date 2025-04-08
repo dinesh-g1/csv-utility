@@ -14,3 +14,11 @@ const (
 	DefaultHost      = "localhost"
 	DefaultPort      = "8080"
 )
+
+// Test case related constants
+const (
+	CsvFileBasePath   = "/Users/pavankaareddy/dinesh/league-backend-challenge/api/"
+	SampleCsvFileName = "matrix.csv"
+	EmptyCsvFileName  = "empty.csv"
+	BigCsvFileName    = "bigmatrix.csv"
+)
