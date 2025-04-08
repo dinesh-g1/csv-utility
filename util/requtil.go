@@ -5,11 +5,35 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dinesh-g1/csv-utility/consts"
+	"github.com/dinesh-g1/csv-utility/types"
 	"net/http"
 	"strconv"
 )
 
-func GetCSVContentFromRequest(r *http.Request) ([][]string, error) {
+func GetCSVContent(r *http.Request) ([][]string, error) {
+	if r.Method != http.MethodPost {
+		return nil, &types.ApiError{
+			Cause:      nil,
+			Message:    "Method not allowed",
+			StatusCode: http.StatusMethodNotAllowed,
+		}
+	}
+	return ParseCSV(r)
+}
+
+func ParseCSV(r *http.Request) ([][]string, error) {
+	records, err := getCSVContent(r)
+	if err != nil {
+		return nil, &types.ApiError{
+			Cause:      err,
+			Message:    err.Error(),
+			StatusCode: http.StatusBadRequest,
+		}
+	}
+	return records, nil
+}
+
+func getCSVContent(r *http.Request) ([][]string, error) {
 	file, _, err := r.FormFile(consts.CSV_FILE_KEY)
 	if err != nil {
 		return nil, err
@@ -36,9 +60,13 @@ func ValidateCSV(records [][]string) error {
 }
 
 func ValidateCSVOnRowColSize(records [][]string) error {
+	if len(records) < 1 {
+		emptyCSVFile := fmt.Sprintf("given file has no content")
+		return errors.New(emptyCSVFile)
+	}
 	if len(records) != len(records[0]) {
-		sizeNotEqualErrMsg := fmt.Sprintf("no of rows %d is not equal to no of columns %d", len(records), len(records[0]))
-		return errors.New(sizeNotEqualErrMsg)
+		sizeNotEqual := fmt.Sprintf("no of rows %d is not equal to no of columns %d", len(records), len(records[0]))
+		return errors.New(sizeNotEqual)
 	}
 
 	return nil
