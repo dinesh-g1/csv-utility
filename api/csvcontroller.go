@@ -6,11 +6,13 @@ import (
 	"github.com/dinesh-g1/csv-utility/types"
 	"github.com/dinesh-g1/csv-utility/util"
 	"log"
+	"math/big"
 	"net/http"
 	"strconv"
 	"strings"
 )
 
+// RootHandler wraps all the other handlers to provide centralized error handling capabilities
 type RootHandler func(http.ResponseWriter, *http.Request) error
 
 func (fn RootHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -57,14 +59,9 @@ func Echo(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	var echoStr string
+	var response string
 	for _, row := range records {
-		echoStr = fmt.Sprintf("%s%s\n", echoStr, strings.Join(row, ","))
-	}
-
-	response := types.SuccessResponse{
-		Value:      echoStr,
-		StatusCode: http.StatusOK,
+		response = fmt.Sprintf("%s%s\n", response, strings.Join(row, ","))
 	}
 
 	err = util.SendResponse(w, &response)
@@ -79,7 +76,11 @@ func Sum(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	var sum int32
+
+	var limit big.Int
+	limit.Exp(big.NewInt(10), big.NewInt(99), nil)
+
+	sum := big.NewInt(0)
 	for _, record := range records {
 		for _, num := range record {
 			intNum, err := strconv.Atoi(num)
@@ -90,16 +91,22 @@ func Sum(w http.ResponseWriter, r *http.Request) error {
 					StatusCode: http.StatusInternalServerError,
 				}
 			}
-			sum += int32(intNum)
+
+			if sum.Cmp(&limit) < 0 {
+				sum.Add(sum, big.NewInt(int64(intNum)))
+			} else {
+				return &types.ApiError{
+					Cause:      nil,
+					Message:    fmt.Sprintf("sum is larger than %s", limit.String()),
+					StatusCode: http.StatusInternalServerError,
+				}
+			}
 		}
 	}
 
-	response := types.SuccessResponse{
-		Value:      fmt.Sprintf("%d", sum),
-		StatusCode: http.StatusOK,
-	}
+	sumStr := sum.String()
 
-	err = util.SendResponse(w, &response)
+	err = util.SendResponse(w, &sumStr)
 	if err != nil {
 		return err
 	}
@@ -111,7 +118,11 @@ func Multiply(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	var totalMul int64 = 1
+
+	var limit big.Int
+	limit.Exp(big.NewInt(10), big.NewInt(99), nil)
+
+	multiply := big.NewInt(1)
 	for _, record := range records {
 		for _, num := range record {
 			intNum, err := strconv.Atoi(num)
@@ -122,16 +133,21 @@ func Multiply(w http.ResponseWriter, r *http.Request) error {
 					StatusCode: http.StatusInternalServerError,
 				}
 			}
-			totalMul *= int64(intNum)
+			if multiply.Cmp(&limit) < 0 {
+				multiply.Mul(multiply, big.NewInt(int64(intNum)))
+			} else {
+				return &types.ApiError{
+					Cause:      nil,
+					Message:    fmt.Sprintf("multiplicated value is larger than %s", limit.String()),
+					StatusCode: http.StatusInternalServerError,
+				}
+			}
+
 		}
 	}
+	totalMulStr := multiply.String()
 
-	response := types.SuccessResponse{
-		Value:      fmt.Sprintf("%d", totalMul),
-		StatusCode: http.StatusOK,
-	}
-
-	err = util.SendResponse(w, &response)
+	err = util.SendResponse(w, &totalMulStr)
 	if err != nil {
 		return err
 	}
@@ -159,12 +175,7 @@ func Invert(w http.ResponseWriter, r *http.Request) error {
 		inverted = fmt.Sprintf("%s%s\n", inverted, strings.Join(row, ","))
 	}
 
-	response := types.SuccessResponse{
-		Value:      inverted,
-		StatusCode: http.StatusOK,
-	}
-
-	err = util.SendResponse(w, &response)
+	err = util.SendResponse(w, &inverted)
 	if err != nil {
 		return err
 	}
@@ -185,12 +196,7 @@ func Flatten(w http.ResponseWriter, r *http.Request) error {
 	}
 	flattened := strings.TrimSuffix(responseBuilder.String(), ",")
 
-	response := types.SuccessResponse{
-		Value:      flattened,
-		StatusCode: http.StatusOK,
-	}
-
-	err = util.SendResponse(w, &response)
+	err = util.SendResponse(w, &flattened)
 	if err != nil {
 		return err
 	}

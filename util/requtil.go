@@ -34,7 +34,7 @@ func ParseCSV(r *http.Request) ([][]string, error) {
 }
 
 func getCSVContent(r *http.Request) ([][]string, error) {
-	file, _, err := r.FormFile(consts.CSV_FILE_KEY)
+	file, _, err := r.FormFile(consts.CsvFileKey)
 	if err != nil {
 		return nil, err
 	}
